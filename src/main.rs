@@ -16,8 +16,18 @@ fn is_defeated(health: u32) -> bool {
     health == 0
 }
 
+fn attack(health: u32, base_damage: u32, bonus_damage: u32) -> u32 {
+    if is_defeated(health) {
+        return 0;
+    }
+
+    let damage = click_damage(base_damage, bonus_damage);
+    health_after_hit(health, damage)
+}
+
 fn main() {
-    println!("Click damage: {}", click_damage(3, 2));
-    println!("Health after hit: {}", health_after_hit(12, 5));
-    println!("Defeated: {}", is_defeated(0));
+    let remaining = attack(12, 3, 2);
+    println!("Health after attack: {remaining}");
+    println!("Defeated: {}", is_defeated(remaining));
+    println!("Already defeated: {}", attack(0, 3, 2));
 }

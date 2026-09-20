@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 1: Skip Hello World. Let's Make Damage.**.
+This checkout is the end of **article 2: Tiny Functions, Bigger Rules**.
 
-Three tiny damage, health, and death calculations in `src/main.rs`.
+An `attack()` calculation composed from the tiny functions, including a defeated-enemy guard.
 
 ## Run this checkpoint
 
