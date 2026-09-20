@@ -16,35 +16,181 @@ fn is_defeated(health: u32) -> bool {
     health == 0
 }
 
+fn xp_to_next(level: u32) -> u32 {
+    20u32.saturating_add(level.saturating_sub(1).saturating_mul(15))
+}
+
+/// Apply XP and return how many levels were gained.
+fn apply_xp(level: &mut u32, xp: &mut u32, amount: u32) -> u32 {
+    *xp = (*xp).saturating_add(amount);
+    let mut levels_gained: u32 = 0;
+
+    loop {
+        let needed = xp_to_next(*level);
+        if *xp < needed {
+            break;
+        }
+
+        *xp -= needed;
+        *level = (*level).saturating_add(1);
+        levels_gained = levels_gained.saturating_add(1);
+    }
+
+    levels_gained
+}
+
+const CLICK_BASE_COST: u32 = 10;
+
+/// Scale a price using integer math so gameplay stays deterministic.
+fn scaled_cost(base: u32, level: u32, numerator: u32, denominator: u32) -> u32 {
+    let mut cost = u64::from(base);
+
+    for _ in 0..level {
+        cost = cost
+            .saturating_mul(u64::from(numerator))
+            .saturating_add(u64::from(denominator - 1))
+            / u64::from(denominator);
+    }
+
+    cost.min(u64::from(u32::MAX)) as u32
+}
+
+fn click_upgrade_cost(level: u32) -> u32 {
+    scaled_cost(CLICK_BASE_COST, level, 3, 2)
+}
+
+fn click_upgrade_bonus(level: u32) -> u32 {
+    level.saturating_mul(2)
+}
+
 struct Player {
-    base_damage: u32,
-    bonus_damage: u32,
+    level: u32,
+    xp: u32,
     gold: u32,
+    click_upgrade_level: u32,
     total_kills: u32,
 }
 
 impl Player {
     fn new() -> Self {
         Self {
-            base_damage: 3,
-            bonus_damage: 2,
+            level: 1,
+            xp: 0,
             gold: 0,
+            click_upgrade_level: 0,
             total_kills: 0,
         }
     }
+}
+
+impl Player {
+    fn base_click_damage(&self) -> u32 {
+        1u32.saturating_add(self.level.saturating_sub(1))
+    }
 
     fn click_damage(&self) -> u32 {
-        click_damage(self.base_damage, self.bonus_damage)
+        click_damage(
+            self.base_click_damage(),
+            click_upgrade_bonus(self.click_upgrade_level),
+        )
+    }
+
+    fn click_upgrade_cost(&self) -> u32 {
+        click_upgrade_cost(self.click_upgrade_level)
+    }
+
+    fn can_afford(&self, cost: u32) -> bool {
+        self.gold >= cost
+    }
+
+    fn spend_gold(&mut self, amount: u32) -> bool {
+        if !self.can_afford(amount) {
+            return false;
+        }
+
+        self.gold -= amount;
+        true
+    }
+
+    fn add_gold(&mut self, amount: u32) {
+        self.gold = self.gold.saturating_add(amount);
+    }
+
+    fn add_kill(&mut self) {
+        self.total_kills = self.total_kills.saturating_add(1);
+    }
+
+    fn add_xp(&mut self, amount: u32) -> u32 {
+        apply_xp(&mut self.level, &mut self.xp, amount)
+    }
+
+    fn buy_click_upgrade(&mut self) -> bool {
+        let cost = self.click_upgrade_cost();
+        if !self.spend_gold(cost) {
+            return false;
+        }
+
+        self.click_upgrade_level = self.click_upgrade_level.saturating_add(1);
+        true
     }
 }
 
+const ENEMY_NAMES: [&str; 8] = [
+    "Moss Slime",
+    "Cave Beetle",
+    "Scrap Rat",
+    "Dust Imp",
+    "Iron Crab",
+    "Glow Moth",
+    "Stone Toad",
+    "Copper Wisp",
+];
+
 struct Enemy {
+    name: String,
     health: u32,
+    max_health: u32,
+    gold_reward: u32,
+    xp_reward: u32,
+    is_boss: bool,
 }
 
 impl Enemy {
-    fn new(health: u32) -> Self {
-        Self { health }
+    fn for_stage(stage: u32) -> Self {
+        let stage = stage.max(1);
+        let is_boss = stage % 10 == 0;
+        let normal_health = 8u32
+            .saturating_add(stage.saturating_mul(4))
+            .saturating_add(stage.saturating_mul(stage) / 2);
+        let max_health = if is_boss {
+            normal_health.saturating_mul(3)
+        } else {
+            normal_health
+        };
+
+        let reward_multiplier = if is_boss { 3 } else { 1 };
+        let gold_reward = 3u32
+            .saturating_add(stage.saturating_mul(2))
+            .saturating_mul(reward_multiplier);
+        let xp_reward = 4u32
+            .saturating_add(stage.saturating_mul(2))
+            .saturating_mul(reward_multiplier);
+
+        let name = if is_boss {
+            format!("Iron Warden {stage}")
+        } else {
+            let index = ((stage - 1) as usize) % ENEMY_NAMES.len();
+            ENEMY_NAMES[index].to_string()
+        };
+
+        Self {
+            name,
+            health: max_health,
+            max_health,
+            gold_reward,
+            xp_reward,
+            is_boss,
+        }
     }
 
     fn take_damage(&mut self, damage: u32) {
@@ -56,14 +202,6 @@ impl Enemy {
     }
 }
 
-fn attack(player: &Player, enemy: &mut Enemy) {
-    if enemy.defeated() {
-        return;
-    }
-
-    enemy.take_damage(player.click_damage());
-}
-
 struct Game {
     stage: u32,
     player: Player,
@@ -72,35 +210,53 @@ struct Game {
 
 impl Game {
     fn new() -> Self {
+        let stage = 1;
         Self {
-            stage: 1,
+            stage,
             player: Player::new(),
-            enemy: Enemy::new(12),
+            enemy: Enemy::for_stage(stage),
         }
     }
+}
 
+impl Game {
     fn click(&mut self) {
-        attack(&self.player, &mut self.enemy);
+        let damage = self.player.click_damage();
+        self.enemy.take_damage(damage);
         if self.enemy.defeated() {
             self.defeat_enemy();
         }
     }
 
+    fn buy_click_upgrade(&mut self) -> bool {
+        self.player.buy_click_upgrade()
+    }
+
     fn defeat_enemy(&mut self) {
-        self.player.gold = self.player.gold.saturating_add(5);
-        self.player.total_kills = self.player.total_kills.saturating_add(1);
-        self.stage = self.stage.saturating_add(1);
-        self.enemy = Enemy::new(12);
+        let gold = self.enemy.gold_reward;
+        let xp = self.enemy.xp_reward;
+
+        self.player.add_gold(gold);
+        self.player.add_xp(xp);
+        self.player.add_kill();
+
+        self.stage = self.stage.saturating_add(1).max(1);
+        self.enemy = Enemy::for_stage(self.stage);
     }
 }
 
 fn main() {
     let mut game = Game::new();
-    game.click();
-    game.click();
-    game.click();
+    for _ in 0..100 {
+        game.click();
+    }
+    let bought_click = game.buy_click_upgrade();
     println!(
-        "Stage: {}; gold: {}; kills: {}; next enemy HP: {}",
-        game.stage, game.player.gold, game.player.total_kills, game.enemy.health
+        "Stage: {}; level: {}; gold: {}; kills: {}",
+        game.stage, game.player.level, game.player.gold, game.player.total_kills
+    );
+    println!(
+        "Click upgrade: {bought_click}; click damage: {}",
+        game.player.click_damage()
     );
 }

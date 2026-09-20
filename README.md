@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 5: One Click, One Turn**.
+This checkout is the end of **article 6: Gold, XP, Levels, and Upgrades**.
 
-`Game::click()` handles damage, defeat, a fixed gold reward, and the next enemy.
+XP, levels, scaled enemies and bosses, gold spending, and click upgrades.
 
 ## Run this checkpoint
 
