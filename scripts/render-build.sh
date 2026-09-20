@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+# Render can provide a shared, read-only Rust installation. Keep toolchains and
+# Cargo downloads in the build user's writable home instead.
+export RUSTUP_HOME="$HOME/.rustup"
+export CARGO_HOME="$HOME/.cargo"
+export PATH="$CARGO_HOME/bin:$HOME/.local/bin:$PATH"
 WASM_PACK_VERSION="v0.15.0"
 
 if ! command -v rustup >/dev/null 2>&1; then
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --no-modify-path
   # shellcheck disable=SC1091
-  source "$HOME/.cargo/env"
+  source "$CARGO_HOME/env"
 fi
 
-rustup toolchain install stable --profile minimal
+rustup toolchain install stable --profile minimal --no-self-update
 rustup default stable
 rustup target add wasm32-unknown-unknown
 
