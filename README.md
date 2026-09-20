@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 10: Rust Meets WebAssembly**.
+This checkout is the end of **article 11: Put a Web Component Around It**.
 
-The existing engine gets a `wasm-bindgen` wrapper exported to JavaScript as `Game`.
+The playable `<idle-game>` UI adds rendering, controls, local saves, offline progress, and development servers.
 
 ## Run this checkpoint
 
@@ -25,7 +25,19 @@ wasm-pack build --dev --target web --out-dir web/pkg --out-name rustbound_idle
 
 The Rust toolchain file includes `wasm32-unknown-unknown`. Generated bindings and WASM files stay out of Git.
 
-The browser UI arrives in article 11. This checkpoint produces the WASM engine and its JavaScript bindings.
+With Python 3 and `wasm-pack` installed, start the browser game on Windows:
+
+```powershell
+.\scripts\dev.ps1
+```
+
+Or on macOS/Linux:
+
+```sh
+bash scripts/dev.sh
+```
+
+Open `http://localhost:8080`. The scripts build the development WASM package and serve `web/` over HTTP. Click to earn gold, buy upgrades, and reload to restore your local save. Offline progress is capped at four hours.
 
 ## Article checkpoints
 
