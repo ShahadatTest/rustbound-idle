@@ -1,0 +1,8 @@
+[package]
+name = "rustbound-idle"
+version = "0.1.0"
+edition = "2021"
+description = "A tiny Rust idle clicker engine compiled to WebAssembly and wrapped in a native Web Component."
+license = "MIT"
+
+[dependencies]
