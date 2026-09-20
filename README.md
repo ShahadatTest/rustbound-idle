@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 11: Put a Web Component Around It**.
+This checkout is the end of **article 12: Ship It**.
 
-The playable `<idle-game>` UI adds rendering, controls, local saves, offline progress, and development servers.
+A release build assembles `dist/`; a Render blueprint and CI prepare the static site for deployment.
 
 ## Run this checkpoint
 
@@ -38,6 +38,23 @@ bash scripts/dev.sh
 ```
 
 Open `http://localhost:8080`. The scripts build the development WASM package and serve `web/` over HTTP. Click to earn gold, buy upgrades, and reload to restore your local save. Offline progress is capped at four hours.
+
+## Build and deploy
+
+With Rust, `wasm-pack`, and Bash installed:
+
+```sh
+bash scripts/build.sh
+python3 -m http.server 8080 --directory dist
+```
+
+The release build places HTML, CSS, JavaScript, and the generated `.wasm` file in `dist/`.
+
+`Cargo.toml` enables bulk-memory support in `wasm-opt` so the optimizer accepts the instructions emitted by the Rust WASM target.
+
+Push the repository to your Git host and connect it to Render using `render.yaml`. The blueprint describes a static site named `rustbound-idle`, runs `bash ./scripts/render-build.sh`, and publishes `./dist`. The build script installs the required Rust/WASM tooling when needed. For a manually configured static site, use those same build and publish settings.
+
+The GitHub Actions workflow runs the Rust tests and the deployment build on pushes and pull requests. This repository contains the deployment configuration; creating the hosted service is a separate step.
 
 ## Article checkpoints
 

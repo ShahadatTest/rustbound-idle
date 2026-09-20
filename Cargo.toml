@@ -18,3 +18,7 @@ opt-level = "s"
 lto = true
 codegen-units = 1
 strip = true
+
+[package.metadata.wasm-pack.profile.release]
+# Accept the bulk-memory instructions emitted by the Rust WASM target.
+wasm-opt = ["-O", "--enable-bulk-memory"]
