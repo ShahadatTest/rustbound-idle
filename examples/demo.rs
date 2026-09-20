@@ -16,4 +16,8 @@ fn main() {
         "Click upgrade: {bought_click}; idle upgrade: {bought_idle}; idle DPS: {}",
         game.player.idle_dps()
     );
+    let saved = game.save_json().expect("game should serialize");
+    let restored = Game::from_saved_json(&saved).expect("save should restore");
+    assert_eq!(restored, game);
+    println!("Save restored successfully.");
 }

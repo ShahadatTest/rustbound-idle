@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use crate::combat;
 
 const ENEMY_NAMES: [&str; 8] = [
@@ -11,7 +13,8 @@ const ENEMY_NAMES: [&str; 8] = [
     "Copper Wisp",
 ];
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct Enemy {
     pub name: String,
     pub health: u32,

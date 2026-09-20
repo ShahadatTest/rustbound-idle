@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 8: You Accidentally Built a Game Engine**.
+This checkout is the end of **article 9: Give the Game a Memory**.
 
-The same rules move into six modules with a public `Game` library API, unit tests, and a runnable example.
+Versioned JSON saves, restore validation, and browser snapshots with derived display values.
 
 ## Run this checkpoint
 
@@ -14,6 +14,8 @@ Install stable Rust with Cargo. The early articles use a terminal demo so reader
 cargo run --locked --example demo
 cargo test --locked
 ```
+
+`Game::save_json()` stores engine state; `Game::from_saved_json()` restores it. `Game::state_json()` adds calculated values for rendering. The demo also checks a save round trip.
 
 ## Article checkpoints
 

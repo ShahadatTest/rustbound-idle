@@ -1,6 +1,9 @@
+use serde::{Deserialize, Serialize};
+
 use crate::{combat, progression, upgrades};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct Player {
     pub level: u32,
     pub xp: u32,
