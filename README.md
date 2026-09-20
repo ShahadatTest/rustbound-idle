@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 6: Gold, XP, Levels, and Upgrades**.
+This checkout is the end of **article 7: Make Time Do the Work**.
 
-XP, levels, scaled enemies and bosses, gold spending, and click upgrades.
+Idle upgrades, `tick(seconds)`, and a shared damage pool that can defeat several enemies.
 
 ## Run this checkpoint
 

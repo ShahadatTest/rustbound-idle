@@ -16,6 +16,11 @@ fn is_defeated(health: u32) -> bool {
     health == 0
 }
 
+/// Convert damage-per-second and elapsed seconds into one deterministic damage pool.
+fn idle_damage(damage_per_second: u32, seconds: u32) -> u64 {
+    u64::from(damage_per_second).saturating_mul(u64::from(seconds))
+}
+
 fn xp_to_next(level: u32) -> u32 {
     20u32.saturating_add(level.saturating_sub(1).saturating_mul(15))
 }
@@ -40,6 +45,7 @@ fn apply_xp(level: &mut u32, xp: &mut u32, amount: u32) -> u32 {
 }
 
 const CLICK_BASE_COST: u32 = 10;
+const IDLE_BASE_COST: u32 = 25;
 
 /// Scale a price using integer math so gameplay stays deterministic.
 fn scaled_cost(base: u32, level: u32, numerator: u32, denominator: u32) -> u32 {
@@ -59,8 +65,21 @@ fn click_upgrade_cost(level: u32) -> u32 {
     scaled_cost(CLICK_BASE_COST, level, 3, 2)
 }
 
+fn idle_upgrade_cost(level: u32) -> u32 {
+    scaled_cost(IDLE_BASE_COST, level, 8, 5)
+}
+
 fn click_upgrade_bonus(level: u32) -> u32 {
     level.saturating_mul(2)
+}
+
+fn idle_upgrade_dps(level: u32, player_level: u32) -> u32 {
+    if level == 0 {
+        return 0;
+    }
+
+    let level_multiplier = 1 + player_level.saturating_sub(1) / 3;
+    level.saturating_mul(level_multiplier)
 }
 
 struct Player {
@@ -68,6 +87,7 @@ struct Player {
     xp: u32,
     gold: u32,
     click_upgrade_level: u32,
+    idle_upgrade_level: u32,
     total_kills: u32,
 }
 
@@ -78,6 +98,7 @@ impl Player {
             xp: 0,
             gold: 0,
             click_upgrade_level: 0,
+            idle_upgrade_level: 0,
             total_kills: 0,
         }
     }
@@ -95,8 +116,16 @@ impl Player {
         )
     }
 
+    fn idle_dps(&self) -> u32 {
+        idle_upgrade_dps(self.idle_upgrade_level, self.level)
+    }
+
     fn click_upgrade_cost(&self) -> u32 {
         click_upgrade_cost(self.click_upgrade_level)
+    }
+
+    fn idle_upgrade_cost(&self) -> u32 {
+        idle_upgrade_cost(self.idle_upgrade_level)
     }
 
     fn can_afford(&self, cost: u32) -> bool {
@@ -131,6 +160,16 @@ impl Player {
         }
 
         self.click_upgrade_level = self.click_upgrade_level.saturating_add(1);
+        true
+    }
+
+    fn buy_idle_upgrade(&mut self) -> bool {
+        let cost = self.idle_upgrade_cost();
+        if !self.spend_gold(cost) {
+            return false;
+        }
+
+        self.idle_upgrade_level = self.idle_upgrade_level.saturating_add(1);
         true
     }
 }
@@ -222,14 +261,39 @@ impl Game {
 impl Game {
     fn click(&mut self) {
         let damage = self.player.click_damage();
-        self.enemy.take_damage(damage);
-        if self.enemy.defeated() {
-            self.defeat_enemy();
+        self.apply_damage_pool(u64::from(damage));
+    }
+
+    fn tick(&mut self, seconds: u32) {
+        if seconds == 0 {
+            return;
         }
+
+        let total_damage = idle_damage(self.player.idle_dps(), seconds);
+        self.apply_damage_pool(total_damage);
     }
 
     fn buy_click_upgrade(&mut self) -> bool {
         self.player.buy_click_upgrade()
+    }
+
+    fn buy_idle_upgrade(&mut self) -> bool {
+        self.player.buy_idle_upgrade()
+    }
+
+    fn apply_damage_pool(&mut self, mut damage: u64) {
+        while damage > 0 {
+            let current_health = u64::from(self.enemy.health.max(1));
+
+            if damage < current_health {
+                self.enemy.take_damage(damage as u32);
+                break;
+            }
+
+            damage -= current_health;
+            self.enemy.health = 0;
+            self.defeat_enemy();
+        }
     }
 
     fn defeat_enemy(&mut self) {
@@ -251,12 +315,14 @@ fn main() {
         game.click();
     }
     let bought_click = game.buy_click_upgrade();
+    let bought_idle = game.buy_idle_upgrade();
+    game.tick(10);
     println!(
         "Stage: {}; level: {}; gold: {}; kills: {}",
         game.stage, game.player.level, game.player.gold, game.player.total_kills
     );
     println!(
-        "Click upgrade: {bought_click}; click damage: {}",
-        game.player.click_damage()
+        "Click upgrade: {bought_click}; idle upgrade: {bought_idle}; idle DPS: {}",
+        game.player.idle_dps()
     );
 }
