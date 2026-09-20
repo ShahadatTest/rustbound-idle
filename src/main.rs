@@ -29,7 +29,7 @@ impl Player {
         }
     }
 
-    fn click_damage(self) -> u32 {
+    fn click_damage(&self) -> u32 {
         click_damage(self.base_damage, self.bonus_damage)
     }
 }
@@ -43,28 +43,31 @@ impl Enemy {
         Self { health }
     }
 
-    fn take_damage(self, damage: u32) -> Self {
-        Self {
-            health: health_after_hit(self.health, damage),
-        }
+    fn take_damage(&mut self, damage: u32) {
+        self.health = health_after_hit(self.health, damage);
     }
 
-    fn defeated(self) -> bool {
+    fn defeated(&self) -> bool {
         is_defeated(self.health)
     }
 }
 
-fn attack(player: Player, enemy: Enemy) -> Enemy {
-    if enemy.health == 0 {
-        return enemy;
+fn attack(player: &Player, enemy: &mut Enemy) {
+    if enemy.defeated() {
+        return;
     }
-    enemy.take_damage(player.click_damage())
+
+    enemy.take_damage(player.click_damage());
 }
 
 fn main() {
     let player = Player::new();
-    let enemy = Enemy::new(12);
-    let enemy = attack(player, enemy);
-    println!("Enemy health: {}", enemy.health);
-    println!("Defeated: {}", enemy.defeated());
+    let mut enemy = Enemy::new(12);
+    attack(&player, &mut enemy);
+    attack(&player, &mut enemy);
+    println!("Enemy health after two attacks: {}", enemy.health);
+    println!(
+        "Player can attack again for {} damage",
+        player.click_damage()
+    );
 }

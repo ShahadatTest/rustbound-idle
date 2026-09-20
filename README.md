@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 3: Give the Game a Shape**.
+This checkout is the end of **article 4: Borrowing Without the Lecture**.
 
-`Player` and `Enemy` structs with constructors and methods; attacks consume and return the enemy.
+Attacks borrow a reusable player and mutate the same enemy through references.
 
 ## Run this checkpoint
 
