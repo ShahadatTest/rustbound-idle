@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 9: Give the Game a Memory**.
+This checkout is the end of **article 10: Rust Meets WebAssembly**.
 
-Versioned JSON saves, restore validation, and browser snapshots with derived display values.
+The existing engine gets a `wasm-bindgen` wrapper exported to JavaScript as `Game`.
 
 ## Run this checkpoint
 
@@ -16,6 +16,16 @@ cargo test --locked
 ```
 
 `Game::save_json()` stores engine state; `Game::from_saved_json()` restores it. `Game::state_json()` adds calculated values for rendering. The demo also checks a save round trip.
+
+To compile the browser API, install `wasm-pack` with `cargo install wasm-pack --locked`, then run:
+
+```sh
+wasm-pack build --dev --target web --out-dir web/pkg --out-name rustbound_idle
+```
+
+The Rust toolchain file includes `wasm32-unknown-unknown`. Generated bindings and WASM files stay out of Git.
+
+The browser UI arrives in article 11. This checkpoint produces the WASM engine and its JavaScript bindings.
 
 ## Article checkpoints
 

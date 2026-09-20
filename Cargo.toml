@@ -5,6 +5,16 @@ edition = "2021"
 description = "A tiny Rust idle clicker engine compiled to WebAssembly and wrapped in a native Web Component."
 license = "MIT"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+strip = true
