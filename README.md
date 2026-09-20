@@ -2,19 +2,18 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 7: Make Time Do the Work**.
+This checkout is the end of **article 8: You Accidentally Built a Game Engine**.
 
-Idle upgrades, `tick(seconds)`, and a shared damage pool that can defeat several enemies.
+The same rules move into six modules with a public `Game` library API, unit tests, and a runnable example.
 
 ## Run this checkpoint
 
 Install stable Rust with Cargo. The early articles use a terminal demo so readers can run the rules before a browser exists.
 
 ```sh
-cargo run --locked
+cargo run --locked --example demo
+cargo test --locked
 ```
-
-The demo prints the result of this article's new behavior.
 
 ## Article checkpoints
 
