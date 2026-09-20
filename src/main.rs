@@ -19,6 +19,8 @@ fn is_defeated(health: u32) -> bool {
 struct Player {
     base_damage: u32,
     bonus_damage: u32,
+    gold: u32,
+    total_kills: u32,
 }
 
 impl Player {
@@ -26,6 +28,8 @@ impl Player {
         Self {
             base_damage: 3,
             bonus_damage: 2,
+            gold: 0,
+            total_kills: 0,
         }
     }
 
@@ -60,14 +64,43 @@ fn attack(player: &Player, enemy: &mut Enemy) {
     enemy.take_damage(player.click_damage());
 }
 
+struct Game {
+    stage: u32,
+    player: Player,
+    enemy: Enemy,
+}
+
+impl Game {
+    fn new() -> Self {
+        Self {
+            stage: 1,
+            player: Player::new(),
+            enemy: Enemy::new(12),
+        }
+    }
+
+    fn click(&mut self) {
+        attack(&self.player, &mut self.enemy);
+        if self.enemy.defeated() {
+            self.defeat_enemy();
+        }
+    }
+
+    fn defeat_enemy(&mut self) {
+        self.player.gold = self.player.gold.saturating_add(5);
+        self.player.total_kills = self.player.total_kills.saturating_add(1);
+        self.stage = self.stage.saturating_add(1);
+        self.enemy = Enemy::new(12);
+    }
+}
+
 fn main() {
-    let player = Player::new();
-    let mut enemy = Enemy::new(12);
-    attack(&player, &mut enemy);
-    attack(&player, &mut enemy);
-    println!("Enemy health after two attacks: {}", enemy.health);
+    let mut game = Game::new();
+    game.click();
+    game.click();
+    game.click();
     println!(
-        "Player can attack again for {} damage",
-        player.click_damage()
+        "Stage: {}; gold: {}; kills: {}; next enemy HP: {}",
+        game.stage, game.player.gold, game.player.total_kills, game.enemy.health
     );
 }

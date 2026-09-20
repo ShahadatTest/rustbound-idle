@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 4: Borrowing Without the Lecture**.
+This checkout is the end of **article 5: One Click, One Turn**.
 
-Attacks borrow a reusable player and mutate the same enemy through references.
+`Game::click()` handles damage, defeat, a fixed gold reward, and the next enemy.
 
 ## Run this checkpoint
 
