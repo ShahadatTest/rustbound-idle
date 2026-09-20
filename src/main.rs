@@ -16,18 +16,55 @@ fn is_defeated(health: u32) -> bool {
     health == 0
 }
 
-fn attack(health: u32, base_damage: u32, bonus_damage: u32) -> u32 {
-    if is_defeated(health) {
-        return 0;
+struct Player {
+    base_damage: u32,
+    bonus_damage: u32,
+}
+
+impl Player {
+    fn new() -> Self {
+        Self {
+            base_damage: 3,
+            bonus_damage: 2,
+        }
     }
 
-    let damage = click_damage(base_damage, bonus_damage);
-    health_after_hit(health, damage)
+    fn click_damage(self) -> u32 {
+        click_damage(self.base_damage, self.bonus_damage)
+    }
+}
+
+struct Enemy {
+    health: u32,
+}
+
+impl Enemy {
+    fn new(health: u32) -> Self {
+        Self { health }
+    }
+
+    fn take_damage(self, damage: u32) -> Self {
+        Self {
+            health: health_after_hit(self.health, damage),
+        }
+    }
+
+    fn defeated(self) -> bool {
+        is_defeated(self.health)
+    }
+}
+
+fn attack(player: Player, enemy: Enemy) -> Enemy {
+    if enemy.health == 0 {
+        return enemy;
+    }
+    enemy.take_damage(player.click_damage())
 }
 
 fn main() {
-    let remaining = attack(12, 3, 2);
-    println!("Health after attack: {remaining}");
-    println!("Defeated: {}", is_defeated(remaining));
-    println!("Already defeated: {}", attack(0, 3, 2));
+    let player = Player::new();
+    let enemy = Enemy::new(12);
+    let enemy = attack(player, enemy);
+    println!("Enemy health: {}", enemy.health);
+    println!("Defeated: {}", enemy.defeated());
 }

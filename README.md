@@ -2,9 +2,9 @@
 
 A proof of concept for a twelve-part series that builds a Rust idle game one article at a time.
 
-This checkout is the end of **article 2: Tiny Functions, Bigger Rules**.
+This checkout is the end of **article 3: Give the Game a Shape**.
 
-An `attack()` calculation composed from the tiny functions, including a defeated-enemy guard.
+`Player` and `Enemy` structs with constructors and methods; attacks consume and return the enemy.
 
 ## Run this checkpoint
 
