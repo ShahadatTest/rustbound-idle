@@ -47,10 +47,11 @@ impl Player {
     }
 
     pub fn click_damage(&self) -> u32 {
-        click_damage(
-            self.base_damage(),
-            self.bonus_damage()
-        )
+        click_damage(self.base_damage(), self.bonus_damage())
+    }
+
+    pub fn click_upgrade_cost(&self) -> u32 {
+        click_upgrade_cost(self.click_upgrade_level)
     }
 
     fn base_damage(&self) -> u32 {
@@ -62,16 +63,14 @@ impl Player {
     }
 
     pub(crate) fn buy_click_upgrade(&mut self) -> PurchaseOutcome {
-        let cost =
-            click_upgrade_cost(self.click_upgrade_level);
+        let cost = self.click_upgrade_cost();
 
         if self.gold < cost {
             return PurchaseOutcome::NotEnoughGold;
         }
 
         self.gold -= cost;
-        self.click_upgrade_level =
-            self.click_upgrade_level.saturating_add(1);
+        self.click_upgrade_level = self.click_upgrade_level.saturating_add(1);
 
         PurchaseOutcome::Purchased
     }

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Rustbound Idle</title>
+  </head>
+  <body>
+    <h1>Rustbound Idle</h1>
+    <pre id="output">Loading the engine...</pre>
+
+    <script type="module">
+      import init, { Game } from "./pkg/rustbound_idle.js";
+
+      await init();
+
+      const game = new Game();
+      const before = JSON.parse(game.stateJson());
+
+      game.tick(3600);
+
+      const after = JSON.parse(game.stateJson());
+
+      document.querySelector("#output").textContent =
+        `One hour away.\nStage ${before.stage} -> ${after.stage}  ` +
+        `Level ${before.level} -> ${after.level}  ` +
+        `Gold ${before.gold} -> ${after.gold}`;
+    </script>
+  </body>
+</html>
