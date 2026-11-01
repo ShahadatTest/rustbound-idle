@@ -91,7 +91,19 @@ impl Game {
 
     fn click(&mut self) {
         attack(&self.player, &mut self.enemy);
+        self.resolve_hit();
+    }
 
+    fn tick(&mut self, seconds: u32) {
+        for _ in 0..seconds {
+            let damage = idle_damage_for_level(self.player.level);
+
+            self.enemy.health = health_after_hit(self.enemy.health, damage);
+            self.resolve_hit();
+        }
+    }
+
+    fn resolve_hit(&mut self) {
         if is_defeated(self.enemy.health) {
             self.defeat_enemy();
         }
@@ -145,6 +157,10 @@ fn base_damage_for_level(level: u32) -> u32 {
     level.saturating_add(4)
 }
 
+fn idle_damage_for_level(level: u32) -> u32 {
+    level
+}
+
 fn click_upgrade_bonus(upgrades: u32) -> u32 {
     upgrades.saturating_mul(2)
 }
@@ -162,7 +178,7 @@ fn attack(player: &Player, enemy: &mut Enemy) {
 fn main() {
     let mut game = Game::new();
 
-    while game.stage <= 8 {
+    while game.stage <= 3 {
         let stage = game.stage;
         let level = game.player.level;
 
@@ -200,6 +216,18 @@ fn main() {
             PurchaseOutcome::NotEnoughGold => {}
         }
     }
+
+    let stage = game.stage;
+    let level = game.player.level;
+    let gold = game.player.gold;
+
+    game.tick(3600);
+
+    println!("One hour away.");
+    println!(
+        "Stage {} -> {}  Level {} -> {}  Gold {} -> {}",
+        stage, game.stage, level, game.player.level, gold, game.player.gold
+    );
 }
 
 #[cfg(test)]
@@ -335,5 +363,60 @@ mod tests {
         assert_eq!(game.enemy.health, 30);
         assert_eq!(game.player.gold, 5);
         assert_eq!(game.player.xp, 6);
+    }
+
+    #[test]
+    fn idle_damage_grows_with_level() {
+        assert_eq!(idle_damage_for_level(1), 1);
+        assert_eq!(idle_damage_for_level(2), 2);
+    }
+
+    #[test]
+    fn enough_time_defeats_the_enemy() {
+        let mut game = Game::new();
+
+        game.tick(20);
+
+        assert_eq!(game.stage, 2);
+        assert_eq!(game.enemy.health, 30);
+        assert_eq!(game.player.gold, 5);
+        assert_eq!(game.player.xp, 6);
+    }
+
+    #[test]
+    fn one_second_is_one_idle_hit() {
+        let mut game = Game::new();
+
+        game.tick(1);
+
+        assert_eq!(game.enemy.health, 19);
+    }
+
+    #[test]
+    fn zero_seconds_changes_nothing() {
+        let mut game = Game::new();
+
+        game.tick(0);
+
+        assert_eq!(game.stage, 1);
+        assert_eq!(game.enemy.health, 20);
+    }
+
+    #[test]
+    fn one_long_tick_matches_many_short_ones() {
+        let mut long = Game::new();
+        let mut short = Game::new();
+
+        long.tick(45);
+
+        for _ in 0..45 {
+            short.tick(1);
+        }
+
+        assert_eq!(long.stage, short.stage);
+        assert_eq!(long.enemy.health, short.enemy.health);
+        assert_eq!(long.player.gold, short.player.gold);
+        assert_eq!(long.player.xp, short.player.xp);
+        assert_eq!(long.player.level, short.player.level);
     }
 }
