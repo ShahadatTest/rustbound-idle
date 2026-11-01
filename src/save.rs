@@ -1,5 +1,6 @@
 use crate::enemy::Enemy;
 use crate::game::Game;
+use crate::rules::enemy_health_for_stage;
 use serde::{Deserialize, Serialize};
 
 const SAVE_VERSION: u32 = 1;
@@ -8,6 +9,7 @@ const SAVE_VERSION: u32 = 1;
 pub enum LoadError {
     Unreadable,
     UnsupportedVersion(u32),
+    Impossible,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -53,6 +55,10 @@ impl Game {
             return Err(LoadError::UnsupportedVersion(save.save_version));
         }
 
+        if save.stage == 0 || save.player.level == 0 {
+            return Err(LoadError::Impossible);
+        }
+
         let mut game = Game::new();
 
         game.stage = save.stage;
@@ -62,7 +68,9 @@ impl Game {
         game.player.click_upgrade_level = save.player.click_upgrade_level;
 
         game.enemy = Enemy::for_stage(save.stage);
-        game.enemy.health = save.enemy_health;
+        game.enemy.health = save.enemy_health.min(enemy_health_for_stage(save.stage));
+
+        game.player.add_xp(0);
 
         Ok(game)
     }
@@ -126,5 +134,58 @@ mod tests {
             Game::from_saved_json(json),
             Err(LoadError::UnsupportedVersion(99))
         ));
+    }
+
+    #[test]
+    fn an_enemy_cannot_have_more_health_than_its_stage_allows() {
+        let mut game = Game::new();
+        game.enemy.health = 4_000_000_000;
+
+        let restored = Game::from_saved_json(&game.save_json()).expect("the save should load");
+
+        assert_eq!(restored.enemy.health, enemy_health_for_stage(1));
+    }
+
+    #[test]
+    fn leftover_xp_is_turned_into_levels() {
+        let mut game = Game::new();
+        game.player.xp = 1_000;
+
+        let restored = Game::from_saved_json(&game.save_json()).expect("the save should load");
+
+        assert!(restored.player.level > 1);
+        assert!(restored.player.xp < restored.player.xp_needed());
+    }
+
+    #[test]
+    fn stage_zero_is_not_a_place() {
+        let mut game = Game::new();
+        game.stage = 0;
+
+        assert!(matches!(
+            Game::from_saved_json(&game.save_json()),
+            Err(LoadError::Impossible)
+        ));
+    }
+
+    #[test]
+    fn level_zero_is_not_a_level() {
+        let mut game = Game::new();
+        game.player.level = 0;
+
+        assert!(matches!(
+            Game::from_saved_json(&game.save_json()),
+            Err(LoadError::Impossible)
+        ));
+    }
+
+    #[test]
+    fn a_great_deal_of_gold_is_still_just_gold() {
+        let mut game = Game::new();
+        game.player.gold = 11_000_000;
+
+        let restored = Game::from_saved_json(&game.save_json()).expect("the save should load");
+
+        assert_eq!(restored.player.gold, 11_000_000);
     }
 }

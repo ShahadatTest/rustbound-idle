@@ -53,6 +53,9 @@ impl WebGame {
             Err(LoadError::UnsupportedVersion(version)) => Err(format!(
                 "That save is version {version}, and this game cannot read it."
             )),
+            Err(LoadError::Impossible) => {
+                Err(String::from("That save could not have come from playing."))
+            }
         }
     }
 }
@@ -132,6 +135,17 @@ mod tests {
         assert_eq!(
             WebGame::from_json("banana").err(),
             Some(String::from("That save could not be read."))
+        );
+    }
+
+    #[test]
+    fn an_impossible_save_is_refused_at_the_border() {
+        let mut game = Game::new();
+        game.stage = 0;
+
+        assert_eq!(
+            WebGame::from_json(&game.save_json()).err(),
+            Some(String::from("That save could not have come from playing."))
         );
     }
 }

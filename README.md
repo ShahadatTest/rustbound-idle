@@ -13,7 +13,7 @@ git switch article_9
 cargo test
 ```
 
-The branches `article_1` through `article_14` hold the finished code for each lesson. Matching immutable tags use `article-01` through `article-14`.
+The branches `article_1` through `article_15` hold the finished code for each lesson. Matching immutable tags use `article-01` through `article-15`.
 
 | Checkpoint | Lesson |
 | --- | --- |
@@ -31,6 +31,7 @@ The branches `article_1` through `article_14` hold the finished code for each le
 | `article_12` | A Button Is Not a Rule. |
 | `article_13` | Localhost Is Not a Launch. |
 | `article_14` | A Bookmark Is Not an App. |
+| `article_15` | Cheaters Are Going to Cheat. |
 
 ## Run the current checkpoint
 
