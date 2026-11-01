@@ -7,7 +7,7 @@ This is the companion project for the twelve-part [Rustbound series](https://jou
 Clone the repository, then switch to the checkpoint named in the article:
 
 ```sh
-git clone https://github.com/mnichols08/rustbound-idle.git
+git clone https://github.com/journey-to-code-org/rustbound-idle.git
 cd rustbound-idle
 git switch article_9
 cargo test
