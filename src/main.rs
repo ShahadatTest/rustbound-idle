@@ -27,8 +27,7 @@ fn main() {
 
             println!(
                 "  Next up: {} with {} health.",
-                game.enemy.name,
-                game.enemy.health
+                game.enemy.name, game.enemy.health
             );
         }
 
@@ -43,6 +42,21 @@ fn main() {
         }
     }
 
+    let save = game.save_json();
+    println!("Saved: {save}");
+
+    drop(game);
+
+    let mut game = match Game::from_saved_json(&save) {
+        Ok(game) => game,
+        Err(error) => {
+            println!("Could not load the save: {error:?}");
+            return;
+        }
+    };
+
+    println!("Loaded. Stage {}, level {}.", game.stage, game.player.level);
+
     let stage = game.stage;
     let level = game.player.level;
     let gold = game.player.gold;
@@ -52,11 +66,6 @@ fn main() {
     println!("One hour away.");
     println!(
         "Stage {} -> {}  Level {} -> {}  Gold {} -> {}",
-        stage,
-        game.stage,
-        level,
-        game.player.level,
-        gold,
-        game.player.gold
+        stage, game.stage, level, game.player.level, gold, game.player.gold
     );
 }
