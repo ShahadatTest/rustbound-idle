@@ -1,4 +1,7 @@
-fn click_damage(base: u32, bonus: u32) -> u32 {
+fn click_damage(
+    base: u32,
+    bonus: u32,
+) -> u32 {
     base.saturating_add(bonus)
 }
 
@@ -13,20 +16,30 @@ fn is_defeated(health: u32) -> bool {
     health == 0
 }
 
+fn attack(
+    health: u32,
+    base_damage: u32,
+    bonus_damage: u32,
+) -> u32 {
+    let damage =
+        click_damage(base_damage, bonus_damage);
+
+    health_after_hit(health, damage)
+}
+
 fn main() {
-    let enemy_health = 5;
+    let mut enemy_health = 20;
 
-    let damage = click_damage(5, 2);
+    while !is_defeated(enemy_health) {
+        enemy_health =
+            attack(enemy_health, 5, 2);
 
-    let remaining_health =
-        health_after_hit(enemy_health, damage);
-
-    println!("You dealt {damage} damage!");
-    println!("Enemy health: {remaining_health}");
-
-    if is_defeated(remaining_health) {
-        println!("Enemy defeated!");
+        println!(
+            "Enemy health: {enemy_health}"
+        );
     }
+
+    println!("Enemy defeated!");
 }
 
 #[cfg(test)]
@@ -40,12 +53,20 @@ mod tests {
 
     #[test]
     fn health_never_drops_below_zero() {
-        assert_eq!(health_after_hit(3, 10), 0);
+        assert_eq!(
+            health_after_hit(3, 10),
+            0
+        );
     }
 
     #[test]
     fn zero_health_is_defeated() {
         assert!(is_defeated(0));
         assert!(!is_defeated(1));
+    }
+
+    #[test]
+    fn attack_reduces_enemy_health() {
+        assert_eq!(attack(10, 5, 2), 3);
     }
 }
