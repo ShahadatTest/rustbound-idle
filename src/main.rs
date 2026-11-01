@@ -1,11 +1,15 @@
 struct Player {
-    base_damage: u32,
     bonus_damage: u32,
+    gold: u32,
+    xp: u32,
+    level: u32,
 }
 
 struct Enemy {
     name: String,
     health: u32,
+    gold_reward: u32,
+    xp_reward: u32,
 }
 
 struct Game {
@@ -14,11 +18,41 @@ struct Game {
     enemy: Enemy,
 }
 
+impl Player {
+    fn new() -> Player {
+        Player {
+            bonus_damage: 2,
+            gold: 0,
+            xp: 0,
+            level: 1,
+        }
+    }
+
+    fn add_gold(&mut self, amount: u32) {
+        self.gold = self.gold.saturating_add(amount);
+    }
+
+    fn add_xp(&mut self, amount: u32) {
+        self.xp = self.xp.saturating_add(amount);
+
+        while self.xp >= xp_to_next_level(self.level) {
+            self.xp -= xp_to_next_level(self.level);
+            self.level = self.level.saturating_add(1);
+        }
+    }
+
+    fn base_damage(&self) -> u32 {
+        base_damage_for_level(self.level)
+    }
+}
+
 impl Enemy {
     fn for_stage(stage: u32) -> Enemy {
         Enemy {
             name: String::from("Training Slime"),
             health: enemy_health_for_stage(stage),
+            gold_reward: gold_reward_for_stage(stage),
+            xp_reward: xp_reward_for_stage(stage),
         }
     }
 }
@@ -27,10 +61,7 @@ impl Game {
     fn new() -> Game {
         Game {
             stage: 1,
-            player: Player {
-                base_damage: 5,
-                bonus_damage: 2,
-            },
+            player: Player::new(),
             enemy: Enemy::for_stage(1),
         }
     }
@@ -44,6 +75,9 @@ impl Game {
     }
 
     fn defeat_enemy(&mut self) {
+        self.player.add_gold(self.enemy.gold_reward);
+        self.player.add_xp(self.enemy.xp_reward);
+
         self.stage = self.stage.saturating_add(1);
         self.enemy = Enemy::for_stage(self.stage);
     }
@@ -53,10 +87,7 @@ fn click_damage(base: u32, bonus: u32) -> u32 {
     base.saturating_add(bonus)
 }
 
-fn health_after_hit(
-    health: u32,
-    damage: u32,
-) -> u32 {
+fn health_after_hit(health: u32, damage: u32) -> u32 {
     health.saturating_sub(damage)
 }
 
@@ -68,34 +99,59 @@ fn enemy_health_for_stage(stage: u32) -> u32 {
     stage.saturating_mul(10).saturating_add(10)
 }
 
-fn attack(
-    player: &Player,
-    enemy: &mut Enemy,
-) {
-    let damage = click_damage(
-        player.base_damage,
-        player.bonus_damage,
-    );
+fn gold_reward_for_stage(stage: u32) -> u32 {
+    stage.saturating_mul(2).saturating_add(3)
+}
 
-    enemy.health =
-        health_after_hit(enemy.health, damage);
+fn xp_reward_for_stage(stage: u32) -> u32 {
+    stage.saturating_mul(2).saturating_add(4)
+}
+
+fn xp_to_next_level(level: u32) -> u32 {
+    level
+        .saturating_sub(1)
+        .saturating_mul(15)
+        .saturating_add(20)
+}
+
+fn base_damage_for_level(level: u32) -> u32 {
+    level.saturating_add(4)
+}
+
+fn attack(player: &Player, enemy: &mut Enemy) {
+    let damage = click_damage(player.base_damage(), player.bonus_damage);
+
+    enemy.health = health_after_hit(enemy.health, damage);
 }
 
 fn main() {
     let mut game = Game::new();
 
-    while game.stage <= 3 {
+    while game.stage <= 8 {
         let stage = game.stage;
+        let level = game.player.level;
 
         game.click();
 
         if game.stage > stage {
-            println!("Stage {stage} cleared!");
-        } else {
             println!(
-                "{} health: {}",
-                game.enemy.name,
-                game.enemy.health
+                "Stage {stage} cleared!  Gold: {}  XP: {}/{}",
+                game.player.gold,
+                game.player.xp,
+                xp_to_next_level(game.player.level)
+            );
+
+            if game.player.level > level {
+                println!(
+                    "Level up! Now level {}. Click damage: {}",
+                    game.player.level,
+                    click_damage(game.player.base_damage(), game.player.bonus_damage)
+                );
+            }
+
+            println!(
+                "  Next up: {} with {} health.",
+                game.enemy.name, game.enemy.health
             );
         }
     }
@@ -112,10 +168,7 @@ mod tests {
 
     #[test]
     fn health_never_drops_below_zero() {
-        assert_eq!(
-            health_after_hit(3, 10),
-            0
-        );
+        assert_eq!(health_after_hit(3, 10), 0);
     }
 
     #[test]
@@ -126,15 +179,10 @@ mod tests {
 
     #[test]
     fn attack_reduces_enemy_health() {
-        let player = Player {
-            base_damage: 5,
-            bonus_damage: 2,
-        };
+        let player = Player::new();
 
-        let mut enemy = Enemy {
-            name: String::from("Training Slime"),
-            health: 10,
-        };
+        let mut enemy = Enemy::for_stage(1);
+        enemy.health = 10;
 
         attack(&player, &mut enemy);
 
@@ -148,11 +196,52 @@ mod tests {
     }
 
     #[test]
+    fn later_stages_pay_better() {
+        assert_eq!(gold_reward_for_stage(1), 5);
+        assert_eq!(gold_reward_for_stage(2), 7);
+        assert_eq!(xp_reward_for_stage(1), 6);
+        assert_eq!(xp_reward_for_stage(2), 8);
+    }
+
+    #[test]
+    fn levels_need_more_xp_as_they_go() {
+        assert_eq!(xp_to_next_level(1), 20);
+        assert_eq!(xp_to_next_level(2), 35);
+    }
+
+    #[test]
+    fn leveling_up_keeps_leftover_xp() {
+        let mut player = Player::new();
+
+        player.add_xp(25);
+
+        assert_eq!(player.level, 2);
+        assert_eq!(player.xp, 5);
+    }
+
+    #[test]
+    fn a_big_reward_can_skip_levels() {
+        let mut player = Player::new();
+
+        player.add_xp(60);
+
+        assert_eq!(player.level, 3);
+        assert_eq!(player.xp, 5);
+    }
+
+    #[test]
+    fn levels_make_the_player_hit_harder() {
+        assert_eq!(base_damage_for_level(1), 5);
+        assert_eq!(base_damage_for_level(2), 6);
+    }
+
+    #[test]
     fn a_new_game_starts_at_stage_one() {
         let game = Game::new();
 
         assert_eq!(game.stage, 1);
         assert_eq!(game.enemy.health, 20);
+        assert_eq!(game.player.gold, 0);
     }
 
     #[test]
@@ -165,7 +254,7 @@ mod tests {
     }
 
     #[test]
-    fn defeating_an_enemy_advances_the_stage() {
+    fn defeating_an_enemy_pays_the_player() {
         let mut game = Game::new();
         game.enemy.health = 1;
 
@@ -173,5 +262,7 @@ mod tests {
 
         assert_eq!(game.stage, 2);
         assert_eq!(game.enemy.health, 30);
+        assert_eq!(game.player.gold, 5);
+        assert_eq!(game.player.xp, 6);
     }
 }
