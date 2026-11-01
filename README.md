@@ -1,6 +1,6 @@
 # Rustbound Idle
 
-This is the companion project for the twelve-part [Rustbound series](https://mnix.dev/series/rustbound-build-your-first-rust-app/). Each checkpoint is copied from the complete program at the end of its lesson and tested before it is published here.
+This is the companion project for the twelve-part [Rustbound series](https://journeytocode.io/series/rustbound-build-your-first-rust-app/). Each checkpoint is copied from the complete program at the end of its lesson and tested before it is published here.
 
 ## Follow one lesson
 
