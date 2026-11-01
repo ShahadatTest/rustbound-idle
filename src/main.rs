@@ -24,14 +24,16 @@ fn is_defeated(health: u32) -> bool {
 }
 
 fn attack(
-    health: u32,
-    base_damage: u32,
-    bonus_damage: u32,
-) -> u32 {
-    let damage =
-        click_damage(base_damage, bonus_damage);
+    player: &Player,
+    enemy: &mut Enemy,
+) {
+    let damage = click_damage(
+        player.base_damage,
+        player.bonus_damage,
+    );
 
-    health_after_hit(health, damage)
+    enemy.health =
+        health_after_hit(enemy.health, damage);
 }
 
 fn main() {
@@ -46,11 +48,7 @@ fn main() {
     };
 
     while !is_defeated(enemy.health) {
-        enemy.health = attack(
-            enemy.health,
-            player.base_damage,
-            player.bonus_damage,
-        );
+        attack(&player, &mut enemy);
 
         println!(
             "{} health: {}",
@@ -87,6 +85,18 @@ mod tests {
 
     #[test]
     fn attack_reduces_enemy_health() {
-        assert_eq!(attack(10, 5, 2), 3);
+        let player = Player {
+            base_damage: 5,
+            bonus_damage: 2,
+        };
+
+        let mut enemy = Enemy {
+            name: String::from("Training Slime"),
+            health: 10,
+        };
+
+        attack(&player, &mut enemy);
+
+        assert_eq!(enemy.health, 3);
     }
 }
