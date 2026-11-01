@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ideas and questions
+    url: https://github.com/journey-to-code-org/rustbound-idle/discussions
+    about: Start with a Discussion when the shape of the work is not decided yet.
+  - name: Security report
+    url: https://github.com/journey-to-code-org/rustbound-idle/security/advisories/new
+    about: Report security concerns privately.

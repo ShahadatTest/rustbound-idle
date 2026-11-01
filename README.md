@@ -1,6 +1,11 @@
 # Rustbound Idle
 
-This is the companion project for the [Rustbound series](https://journeytocode.io/series/rustbound-build-your-first-rust-app/). Each checkpoint is copied from the complete program at the end of its lesson and tested before it is published here.
+This is the game built in the [Rustbound series](https://journeytocode.io/series/rustbound-build-your-first-rust-app/). The tutorial checkpoints stay frozen, while `main` is where the community can keep building.
+
+- [Play Rustbound Idle](https://rustbound-idle.onrender.com/)
+- [Propose an idea in Discussions](https://github.com/journey-to-code-org/rustbound-idle/discussions)
+- [Find work in Issues](https://github.com/journey-to-code-org/rustbound-idle/issues)
+- [Read the contribution guide](CONTRIBUTING.md)
 
 ## Follow one lesson
 
@@ -39,6 +44,12 @@ The branches `article_1` through `article_15` hold the finished code for each le
 cargo test
 cargo run
 ```
+
+## Help build what comes next
+
+You do not need to write Rust to contribute. Testing, documentation, design, accessibility feedback,
+browser work, and game ideas all count. Start with [CONTRIBUTING.md](CONTRIBUTING.md), or ask a question
+in [Discussions](https://github.com/journey-to-code-org/rustbound-idle/discussions).
 
 Articles 11 through 14 also compile the library for the browser:
 

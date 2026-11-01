@@ -1,0 +1,36 @@
+name: Bug report
+description: Something in Rustbound Idle is not working.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Rustbound Idle.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Firefox on Android, Chrome on Windows, or not browser-related
+  - type: dropdown
+    id: installed
+    attributes:
+      label: Were you playing the installed app?
+      options:
+        - No, in a browser tab
+        - Yes, installed
+        - Not sure
+        - Not browser-related
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Give us the smallest repeatable sequence you can.
+    validations:
+      required: true

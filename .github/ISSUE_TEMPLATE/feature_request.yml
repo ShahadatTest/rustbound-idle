@@ -1,0 +1,22 @@
+name: Feature request
+description: Propose a scoped improvement after discussing larger ideas.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you change?
+    validations:
+      required: true
+  - type: textarea
+    id: discussion
+    attributes:
+      label: Related Discussion
+      description: Link the Discussion for a large mechanic or architectural change.
