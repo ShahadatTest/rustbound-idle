@@ -17,10 +17,7 @@ const text = (selector) => game.locator(selector).textContent();
 const number = async (selector) => Number(await text(selector));
 
 await page.goto(PAGE);
-await page.waitForFunction(() => {
-  const el = document.querySelector("idle-game");
-  return el?.shadowRoot?.querySelector("[data-enemy-health]")?.textContent !== "0";
-});
+await page.waitForFunction(() => Boolean(document.querySelector("idle-game")?.game));
 
 const check = (label, condition) => {
   console.log(`${condition ? "ok  " : "FAIL"} ${label}`);

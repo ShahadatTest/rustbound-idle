@@ -13,7 +13,7 @@ git switch article_9
 cargo test
 ```
 
-The branches `article_1` through `article_13` hold the finished code for each lesson. Matching immutable tags use `article-01` through `article-13`.
+The branches `article_1` through `article_14` hold the finished code for each lesson. Matching immutable tags use `article-01` through `article-14`.
 
 | Checkpoint | Lesson |
 | --- | --- |
@@ -30,6 +30,7 @@ The branches `article_1` through `article_13` hold the finished code for each le
 | `article_11` | JavaScript Does Not Get the Rules. |
 | `article_12` | A Button Is Not a Rule. |
 | `article_13` | Localhost Is Not a Launch. |
+| `article_14` | A Bookmark Is Not an App. |
 
 ## Run the current checkpoint
 
@@ -38,7 +39,7 @@ cargo test
 cargo run
 ```
 
-Articles 11 through 13 also compile the library for the browser:
+Articles 11 through 14 also compile the library for the browser:
 
 ```sh
 wasm-pack build --target web --out-dir web/pkg
@@ -60,5 +61,14 @@ bash ./scripts/dev.sh
 bash ./scripts/build.sh
 ```
 
-The release script writes the five files that ship to `dist/`. The Render Blueprint runs
+At the Article 13 checkpoint, the release script writes the five files that ship to `dist/`. The Render Blueprint runs
 `scripts/render-build.sh` and publishes that directory as a static site.
+
+Article 14 turns that release into an installable PWA. It adds the manifest, service worker,
+icons, and an offline browser check. Its release folder contains ten files:
+
+```sh
+bash ./scripts/build.sh
+cd web
+npm run check:offline
+```

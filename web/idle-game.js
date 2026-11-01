@@ -25,6 +25,10 @@ class IdleGame extends HTMLElement {
     this.startClock();
 
     window.addEventListener("beforeunload", () => this.saveGame());
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") this.saveGame();
+    });
   }
 
   renderShell() {
