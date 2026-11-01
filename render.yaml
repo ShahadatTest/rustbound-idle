@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: rustbound-idle
+    runtime: static
+    buildCommand: bash ./scripts/render-build.sh
+    staticPublishPath: ./dist

@@ -1,6 +1,6 @@
 # Rustbound Idle
 
-This is the companion project for the twelve-part [Rustbound series](https://journeytocode.io/series/rustbound-build-your-first-rust-app/). Each checkpoint is copied from the complete program at the end of its lesson and tested before it is published here.
+This is the companion project for the [Rustbound series](https://journeytocode.io/series/rustbound-build-your-first-rust-app/). Each checkpoint is copied from the complete program at the end of its lesson and tested before it is published here.
 
 ## Follow one lesson
 
@@ -13,7 +13,7 @@ git switch article_9
 cargo test
 ```
 
-The branches `article_1` through `article_12` hold the finished code for each lesson. Matching immutable tags use `article-01` through `article-12`. `main` is the end of article 12.
+The branches `article_1` through `article_13` hold the finished code for each lesson. Matching immutable tags use `article-01` through `article-13`.
 
 | Checkpoint | Lesson |
 | --- | --- |
@@ -29,6 +29,7 @@ The branches `article_1` through `article_12` hold the finished code for each le
 | `article_10` | Closing the Terminal Is Not Game Over. |
 | `article_11` | JavaScript Does Not Get the Rules. |
 | `article_12` | A Button Is Not a Rule. |
+| `article_13` | Localhost Is Not a Launch. |
 
 ## Run the current checkpoint
 
@@ -37,7 +38,7 @@ cargo test
 cargo run
 ```
 
-Articles 11 and 12 also compile the library for the browser:
+Articles 11 through 13 also compile the library for the browser:
 
 ```sh
 wasm-pack build --target web --out-dir web/pkg
@@ -51,3 +52,13 @@ cd web
 npm install
 npm run check
 ```
+
+Article 13 adds repeatable development, release, and Render build scripts:
+
+```sh
+bash ./scripts/dev.sh
+bash ./scripts/build.sh
+```
+
+The release script writes the five files that ship to `dist/`. The Render Blueprint runs
+`scripts/render-build.sh` and publishes that directory as a static site.
