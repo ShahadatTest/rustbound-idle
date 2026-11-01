@@ -1,9 +1,5 @@
 use crate::rules::{
-    base_damage_for_level,
-    click_damage,
-    click_upgrade_bonus,
-    click_upgrade_cost,
-    xp_to_next_level,
+    base_damage_for_level, click_damage, click_upgrade_bonus, click_upgrade_cost, xp_to_next_level,
 };
 
 pub struct Player {
@@ -104,10 +100,7 @@ mod tests {
     fn buying_an_upgrade_needs_gold() {
         let mut player = Player::new();
 
-        assert_eq!(
-            player.buy_click_upgrade(),
-            PurchaseOutcome::NotEnoughGold
-        );
+        assert_eq!(player.buy_click_upgrade(), PurchaseOutcome::NotEnoughGold);
         assert_eq!(player.click_upgrade_level, 0);
         assert_eq!(player.bonus_damage(), 0);
     }
@@ -117,10 +110,7 @@ mod tests {
         let mut player = Player::new();
         player.gold = 12;
 
-        assert_eq!(
-            player.buy_click_upgrade(),
-            PurchaseOutcome::Purchased
-        );
+        assert_eq!(player.buy_click_upgrade(), PurchaseOutcome::Purchased);
         assert_eq!(player.gold, 2);
         assert_eq!(player.click_upgrade_level, 1);
         assert_eq!(player.bonus_damage(), 2);

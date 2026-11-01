@@ -1,10 +1,6 @@
 use crate::enemy::Enemy;
 use crate::player::{Player, PurchaseOutcome};
-use crate::rules::{
-    health_after_hit,
-    idle_damage_for_level,
-    is_defeated,
-};
+use crate::rules::{health_after_hit, idle_damage_for_level, is_defeated};
 
 pub struct Game {
     pub stage: u32,
@@ -28,14 +24,9 @@ impl Game {
 
     pub fn tick(&mut self, seconds: u32) {
         for _ in 0..seconds {
-            let damage =
-                idle_damage_for_level(self.player.level);
+            let damage = idle_damage_for_level(self.player.level);
 
-            self.enemy.health =
-                health_after_hit(
-                    self.enemy.health,
-                    damage
-                );
+            self.enemy.health = health_after_hit(self.enemy.health, damage);
 
             self.resolve_hit();
         }
@@ -55,9 +46,7 @@ impl Game {
         self.enemy = Enemy::for_stage(self.stage);
     }
 
-    pub fn buy_click_upgrade(
-        &mut self
-    ) -> PurchaseOutcome {
+    pub fn buy_click_upgrade(&mut self) -> PurchaseOutcome {
         self.player.buy_click_upgrade()
     }
 }
@@ -69,11 +58,7 @@ impl Default for Game {
 }
 
 fn attack(player: &Player, enemy: &mut Enemy) {
-    enemy.health =
-        health_after_hit(
-            enemy.health,
-            player.click_damage()
-        );
+    enemy.health = health_after_hit(enemy.health, player.click_damage());
 }
 
 #[cfg(test)]
@@ -166,21 +151,9 @@ mod tests {
         }
 
         assert_eq!(long.stage, short.stage);
-        assert_eq!(
-            long.enemy.health,
-            short.enemy.health
-        );
-        assert_eq!(
-            long.player.gold,
-            short.player.gold
-        );
-        assert_eq!(
-            long.player.xp,
-            short.player.xp
-        );
-        assert_eq!(
-            long.player.level,
-            short.player.level
-        );
+        assert_eq!(long.enemy.health, short.enemy.health);
+        assert_eq!(long.player.gold, short.player.gold);
+        assert_eq!(long.player.xp, short.player.xp);
+        assert_eq!(long.player.level, short.player.level);
     }
 }

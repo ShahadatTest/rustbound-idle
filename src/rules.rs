@@ -42,9 +42,7 @@ pub(crate) fn click_upgrade_bonus(upgrades: u32) -> u32 {
 }
 
 pub(crate) fn click_upgrade_cost(upgrades: u32) -> u32 {
-    upgrades
-        .saturating_add(1)
-        .saturating_mul(10)
+    upgrades.saturating_add(1).saturating_mul(10)
 }
 
 #[cfg(test)]

@@ -1,8 +1,4 @@
-use crate::rules::{
-    enemy_health_for_stage,
-    gold_reward_for_stage,
-    xp_reward_for_stage,
-};
+use crate::rules::{enemy_health_for_stage, gold_reward_for_stage, xp_reward_for_stage};
 
 pub struct Enemy {
     pub name: String,
