@@ -8,6 +8,47 @@ struct Enemy {
     health: u32,
 }
 
+struct Game {
+    stage: u32,
+    player: Player,
+    enemy: Enemy,
+}
+
+impl Enemy {
+    fn for_stage(stage: u32) -> Enemy {
+        Enemy {
+            name: String::from("Training Slime"),
+            health: enemy_health_for_stage(stage),
+        }
+    }
+}
+
+impl Game {
+    fn new() -> Game {
+        Game {
+            stage: 1,
+            player: Player {
+                base_damage: 5,
+                bonus_damage: 2,
+            },
+            enemy: Enemy::for_stage(1),
+        }
+    }
+
+    fn click(&mut self) {
+        attack(&self.player, &mut self.enemy);
+
+        if is_defeated(self.enemy.health) {
+            self.defeat_enemy();
+        }
+    }
+
+    fn defeat_enemy(&mut self) {
+        self.stage = self.stage.saturating_add(1);
+        self.enemy = Enemy::for_stage(self.stage);
+    }
+}
+
 fn click_damage(base: u32, bonus: u32) -> u32 {
     base.saturating_add(bonus)
 }
@@ -21,6 +62,10 @@ fn health_after_hit(
 
 fn is_defeated(health: u32) -> bool {
     health == 0
+}
+
+fn enemy_health_for_stage(stage: u32) -> u32 {
+    stage.saturating_mul(10).saturating_add(10)
 }
 
 fn attack(
@@ -37,27 +82,23 @@ fn attack(
 }
 
 fn main() {
-    let player = Player {
-        base_damage: 5,
-        bonus_damage: 2,
-    };
+    let mut game = Game::new();
 
-    let mut enemy = Enemy {
-        name: String::from("Training Slime"),
-        health: 20,
-    };
+    while game.stage <= 3 {
+        let stage = game.stage;
 
-    while !is_defeated(enemy.health) {
-        attack(&player, &mut enemy);
+        game.click();
 
-        println!(
-            "{} health: {}",
-            enemy.name,
-            enemy.health
-        );
+        if game.stage > stage {
+            println!("Stage {stage} cleared!");
+        } else {
+            println!(
+                "{} health: {}",
+                game.enemy.name,
+                game.enemy.health
+            );
+        }
     }
-
-    println!("{} defeated!", enemy.name);
 }
 
 #[cfg(test)]
@@ -98,5 +139,39 @@ mod tests {
         attack(&player, &mut enemy);
 
         assert_eq!(enemy.health, 3);
+    }
+
+    #[test]
+    fn later_stages_have_tougher_enemies() {
+        assert_eq!(enemy_health_for_stage(1), 20);
+        assert_eq!(enemy_health_for_stage(2), 30);
+    }
+
+    #[test]
+    fn a_new_game_starts_at_stage_one() {
+        let game = Game::new();
+
+        assert_eq!(game.stage, 1);
+        assert_eq!(game.enemy.health, 20);
+    }
+
+    #[test]
+    fn clicking_damages_the_enemy() {
+        let mut game = Game::new();
+
+        game.click();
+
+        assert_eq!(game.enemy.health, 13);
+    }
+
+    #[test]
+    fn defeating_an_enemy_advances_the_stage() {
+        let mut game = Game::new();
+        game.enemy.health = 1;
+
+        game.click();
+
+        assert_eq!(game.stage, 2);
+        assert_eq!(game.enemy.health, 30);
     }
 }
