@@ -1,8 +1,8 @@
 struct Player {
-    bonus_damage: u32,
     gold: u32,
     xp: u32,
     level: u32,
+    click_upgrade_level: u32,
 }
 
 struct Enemy {
@@ -18,13 +18,19 @@ struct Game {
     enemy: Enemy,
 }
 
+#[derive(Debug, PartialEq)]
+enum PurchaseOutcome {
+    Purchased,
+    NotEnoughGold,
+}
+
 impl Player {
     fn new() -> Player {
         Player {
-            bonus_damage: 2,
             gold: 0,
             xp: 0,
             level: 1,
+            click_upgrade_level: 0,
         }
     }
 
@@ -43,6 +49,23 @@ impl Player {
 
     fn base_damage(&self) -> u32 {
         base_damage_for_level(self.level)
+    }
+
+    fn bonus_damage(&self) -> u32 {
+        click_upgrade_bonus(self.click_upgrade_level)
+    }
+
+    fn buy_click_upgrade(&mut self) -> PurchaseOutcome {
+        let cost = click_upgrade_cost(self.click_upgrade_level);
+
+        if self.gold < cost {
+            return PurchaseOutcome::NotEnoughGold;
+        }
+
+        self.gold -= cost;
+        self.click_upgrade_level = self.click_upgrade_level.saturating_add(1);
+
+        PurchaseOutcome::Purchased
     }
 }
 
@@ -81,6 +104,10 @@ impl Game {
         self.stage = self.stage.saturating_add(1);
         self.enemy = Enemy::for_stage(self.stage);
     }
+
+    fn buy_click_upgrade(&mut self) -> PurchaseOutcome {
+        self.player.buy_click_upgrade()
+    }
 }
 
 fn click_damage(base: u32, bonus: u32) -> u32 {
@@ -118,8 +145,16 @@ fn base_damage_for_level(level: u32) -> u32 {
     level.saturating_add(4)
 }
 
+fn click_upgrade_bonus(upgrades: u32) -> u32 {
+    upgrades.saturating_mul(2)
+}
+
+fn click_upgrade_cost(upgrades: u32) -> u32 {
+    upgrades.saturating_add(1).saturating_mul(10)
+}
+
 fn attack(player: &Player, enemy: &mut Enemy) {
-    let damage = click_damage(player.base_damage(), player.bonus_damage);
+    let damage = click_damage(player.base_damage(), player.bonus_damage());
 
     enemy.health = health_after_hit(enemy.health, damage);
 }
@@ -145,7 +180,7 @@ fn main() {
                 println!(
                     "Level up! Now level {}. Click damage: {}",
                     game.player.level,
-                    click_damage(game.player.base_damage(), game.player.bonus_damage)
+                    click_damage(game.player.base_damage(), game.player.bonus_damage())
                 );
             }
 
@@ -153,6 +188,16 @@ fn main() {
                 "  Next up: {} with {} health.",
                 game.enemy.name, game.enemy.health
             );
+        }
+
+        match game.buy_click_upgrade() {
+            PurchaseOutcome::Purchased => println!(
+                "Bought click upgrade {}! Click damage: {}  Gold left: {}",
+                game.player.click_upgrade_level,
+                click_damage(game.player.base_damage(), game.player.bonus_damage()),
+                game.player.gold
+            ),
+            PurchaseOutcome::NotEnoughGold => {}
         }
     }
 }
@@ -186,7 +231,7 @@ mod tests {
 
         attack(&player, &mut enemy);
 
-        assert_eq!(enemy.health, 3);
+        assert_eq!(enemy.health, 5);
     }
 
     #[test]
@@ -236,6 +281,32 @@ mod tests {
     }
 
     #[test]
+    fn upgrades_cost_more_each_time() {
+        assert_eq!(click_upgrade_cost(0), 10);
+        assert_eq!(click_upgrade_cost(1), 20);
+    }
+
+    #[test]
+    fn buying_an_upgrade_needs_gold() {
+        let mut player = Player::new();
+
+        assert_eq!(player.buy_click_upgrade(), PurchaseOutcome::NotEnoughGold);
+        assert_eq!(player.click_upgrade_level, 0);
+        assert_eq!(player.bonus_damage(), 0);
+    }
+
+    #[test]
+    fn buying_an_upgrade_spends_gold() {
+        let mut player = Player::new();
+        player.gold = 12;
+
+        assert_eq!(player.buy_click_upgrade(), PurchaseOutcome::Purchased);
+        assert_eq!(player.gold, 2);
+        assert_eq!(player.click_upgrade_level, 1);
+        assert_eq!(player.bonus_damage(), 2);
+    }
+
+    #[test]
     fn a_new_game_starts_at_stage_one() {
         let game = Game::new();
 
@@ -250,7 +321,7 @@ mod tests {
 
         game.click();
 
-        assert_eq!(game.enemy.health, 13);
+        assert_eq!(game.enemy.health, 15);
     }
 
     #[test]
