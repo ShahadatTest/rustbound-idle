@@ -1,7 +1,14 @@
-fn click_damage(
-    base: u32,
-    bonus: u32,
-) -> u32 {
+struct Player {
+    base_damage: u32,
+    bonus_damage: u32,
+}
+
+struct Enemy {
+    name: String,
+    health: u32,
+}
+
+fn click_damage(base: u32, bonus: u32) -> u32 {
     base.saturating_add(bonus)
 }
 
@@ -28,18 +35,31 @@ fn attack(
 }
 
 fn main() {
-    let mut enemy_health = 20;
+    let player = Player {
+        base_damage: 5,
+        bonus_damage: 2,
+    };
 
-    while !is_defeated(enemy_health) {
-        enemy_health =
-            attack(enemy_health, 5, 2);
+    let mut enemy = Enemy {
+        name: String::from("Training Slime"),
+        health: 20,
+    };
+
+    while !is_defeated(enemy.health) {
+        enemy.health = attack(
+            enemy.health,
+            player.base_damage,
+            player.bonus_damage,
+        );
 
         println!(
-            "Enemy health: {enemy_health}"
+            "{} health: {}",
+            enemy.name,
+            enemy.health
         );
     }
 
-    println!("Enemy defeated!");
+    println!("{} defeated!", enemy.name);
 }
 
 #[cfg(test)]
